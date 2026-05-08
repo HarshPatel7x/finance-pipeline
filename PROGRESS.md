@@ -9,8 +9,8 @@
 - [x] `src/models.py` — Transaction dataclass
 - [x] `data/sample_transactions.json` — synthetic test data
 - [x] `src/ingest.py` — loads sample + Plaid sandbox mode
-- [ ] Plaid credentials added to `.env` (do this yourself — not committed)
-- [ ] Verified `python -m src.ingest` runs with real Plaid sandbox
+- [x] Plaid credentials added to `.env` (gitignored, not committed)
+- [x] Verified `python -m src.ingest` runs with real Plaid sandbox — 16 transactions loaded
 
 **Sessions this week:** 1
 **Commits this week:** 1

@@ -1,12 +1,13 @@
 """
 Fetches transactions from Plaid (sandbox) or loads from local sample file.
 Usage:
-  python src/ingest.py              # Plaid sandbox (requires .env)
-  python src/ingest.py --sample     # local sample_transactions.json (no credentials needed)
+  python -m src.ingest              # Plaid sandbox (requires .env)
+  python -m src.ingest --sample     # local sample_transactions.json (no credentials needed)
 """
 import json
 import os
 import sys
+import time
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -34,6 +35,7 @@ def fetch_from_plaid() -> list[Transaction]:
     from plaid.model.products import Products
     from plaid.model.sandbox_public_token_create_request import SandboxPublicTokenCreateRequest
     from plaid.model.transactions_get_request import TransactionsGetRequest
+    from plaid.model.transactions_refresh_request import TransactionsRefreshRequest
 
     client_id = os.getenv("PLAID_CLIENT_ID")
     secret = os.getenv("PLAID_SECRET")
@@ -46,7 +48,6 @@ def fetch_from_plaid() -> list[Transaction]:
 
     host = {
         "sandbox": plaid.Environment.Sandbox,
-        "development": plaid.Environment.Development,
         "production": plaid.Environment.Production,
     }.get(env, plaid.Environment.Sandbox)
 
@@ -71,7 +72,8 @@ def fetch_from_plaid() -> list[Transaction]:
     exchange_response = client.item_public_token_exchange(exchange_request)
     access_token = exchange_response["access_token"]
 
-    # Fetch transactions for the last 30 days
+    # Sandbox: trigger transaction data generation, then wait for it to be ready
+    client.transactions_refresh(TransactionsRefreshRequest(access_token=access_token))
     end = date.today()
     start = end - timedelta(days=30)
     tx_request = TransactionsGetRequest(
@@ -79,7 +81,19 @@ def fetch_from_plaid() -> list[Transaction]:
         start_date=start,
         end_date=end,
     )
-    tx_response = client.transactions_get(tx_request)
+
+    # Retry up to 3 times — sandbox data takes a moment to generate
+    tx_response = None
+    for attempt in range(3):
+        try:
+            tx_response = client.transactions_get(tx_request)
+            break
+        except Exception as e:
+            if "PRODUCT_NOT_READY" in str(e) and attempt < 2:
+                print(f"  Sandbox data not ready yet, retrying in 5s... ({attempt + 1}/3)")
+                time.sleep(5)
+            else:
+                raise
 
     transactions = []
     for t in tx_response["transactions"]:

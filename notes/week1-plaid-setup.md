@@ -26,6 +26,12 @@
 1. `sandbox_public_token_create()` → `public_token` (one-time use, short-lived)
 2. `item_public_token_exchange()` → `access_token` (long-lived, store this for Week 2)
 
+## Gotchas learned
+
+**`PRODUCT_NOT_READY` in sandbox** — after `sandbox_public_token_create`, transactions aren't generated instantly. Fix: call `transactions_refresh` first, then retry with a 5s sleep. Already handled in `ingest.py`.
+
+**`plaid.Environment.Development` doesn't exist** in current SDK — only `Sandbox` and `Production`. When you're ready to link real BofA account, flip `PLAID_ENV=production` in `.env` (Plaid's "development" is just a legacy label; sandbox → production is the real path for personal use).
+
 ## Week 2 prep
 - In Week 2 we store the `access_token` so we don't re-create the sandbox item each run
 - DynamoDB table schema: `transaction_id` (partition key, String), all other fields as attributes
