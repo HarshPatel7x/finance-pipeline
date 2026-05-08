@@ -1,0 +1,122 @@
+[
+  {
+    "transaction_id": "tx_001",
+    "date": "2026-04-01",
+    "name": "McDonald's",
+    "amount": 11.74,
+    "account_id": "acc_sandbox_001",
+    "merchant_name": "McDonald's",
+    "category": ["Food and Drink", "Restaurants", "Fast Food"],
+    "pending": false
+  },
+  {
+    "transaction_id": "tx_002",
+    "date": "2026-04-02",
+    "name": "Publix",
+    "amount": 47.38,
+    "account_id": "acc_sandbox_001",
+    "merchant_name": "Publix",
+    "category": ["Shops", "Supermarkets and Groceries"],
+    "pending": false
+  },
+  {
+    "transaction_id": "tx_003",
+    "date": "2026-04-03",
+    "name": "Direct Deposit",
+    "amount": -2350.00,
+    "account_id": "acc_sandbox_001",
+    "merchant_name": null,
+    "category": ["Transfer", "Payroll"],
+    "pending": false
+  },
+  {
+    "transaction_id": "tx_004",
+    "date": "2026-04-05",
+    "name": "LA Fitness",
+    "amount": 32.09,
+    "account_id": "acc_sandbox_001",
+    "merchant_name": "LA Fitness",
+    "category": ["Recreation", "Gyms and Fitness Centers"],
+    "pending": false
+  },
+  {
+    "transaction_id": "tx_005",
+    "date": "2026-04-06",
+    "name": "Chipotle",
+    "amount": 21.94,
+    "account_id": "acc_sandbox_001",
+    "merchant_name": "Chipotle Mexican Grill",
+    "category": ["Food and Drink", "Restaurants"],
+    "pending": false
+  },
+  {
+    "transaction_id": "tx_006",
+    "date": "2026-04-07",
+    "name": "Walmart",
+    "amount": 19.37,
+    "account_id": "acc_sandbox_001",
+    "merchant_name": "Walmart",
+    "category": ["Shops", "Supermarkets and Groceries"],
+    "pending": false
+  },
+  {
+    "transaction_id": "tx_007",
+    "date": "2026-04-10",
+    "name": "Progressive Insurance",
+    "amount": 208.33,
+    "account_id": "acc_sandbox_001",
+    "merchant_name": "Progressive Insurance",
+    "category": ["Service", "Insurance"],
+    "pending": false
+  },
+  {
+    "transaction_id": "tx_008",
+    "date": "2026-04-12",
+    "name": "Netflix",
+    "amount": 15.49,
+    "account_id": "acc_sandbox_001",
+    "merchant_name": "Netflix",
+    "category": ["Service", "Subscription"],
+    "pending": false
+  },
+  {
+    "transaction_id": "tx_009",
+    "date": "2026-04-15",
+    "name": "Credit Card Payment",
+    "amount": 371.00,
+    "account_id": "acc_sandbox_001",
+    "merchant_name": null,
+    "category": ["Transfer", "Credit Card"],
+    "pending": false
+  },
+  {
+    "transaction_id": "tx_010",
+    "date": "2026-04-18",
+    "name": "Taco Bell",
+    "amount": 13.46,
+    "account_id": "acc_sandbox_001",
+    "merchant_name": "Taco Bell",
+    "category": ["Food and Drink", "Restaurants", "Fast Food"],
+    "pending": false
+  },
+  {
+    "transaction_id": "tx_011",
+    "date": "2026-04-20",
+    "name": "LinkedIn Premium",
+    "amount": 45.29,
+    "account_id": "acc_sandbox_001",
+    "merchant_name": "LinkedIn",
+    "category": ["Service", "Subscription"],
+    "pending": false
+  },
+  {
+    "transaction_id": "tx_012",
+    "date": "2026-04-22",
+    "name": "Salary Deposit",
+    "amount": -1850.00,
+    "account_id": "acc_sandbox_001",
+    "merchant_name": null,
+    "category": ["Transfer", "Payroll"],
+    "pending": false
+  }
+]
