@@ -1,2 +1,4 @@
 plaid-python
 python-dotenv
+boto3
+boto3-stubs[dynamodb]
