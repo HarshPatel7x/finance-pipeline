@@ -98,3 +98,35 @@ Add `boto3-stubs[dynamodb]` to requirements.txt. Gives Pylance real type info fo
 Never name a variable `dict`, `list`, `str`, `int`, or `bool` — these are
 Python built-ins. Using them as variable names hides the built-in within
 that scope. Use `item`, `record`, `result` instead.
+
+**5 — Why only merchant_name is None-guarded in to_dynamo_item**
+`merchant_name` is the only `Optional[str]` field in Transaction — the only field
+that can legally be `None`. Every other field always has a value by type definition,
+so there's nothing to guard. Plaid omits merchant_name when it can't identify a
+merchant (e.g. raw bank transfer).
+
+## categorize.py — keyword matching
+
+```python
+if any(kw in text for kw in keywords):
+```
+
+Reads as: "does any keyword from this category appear in the transaction text?"
+- `for kw in keywords` — loop every keyword in the list
+- `kw in text` — substring check (not exact match — "starbucks" matches "Starbucks Coffee #1234")
+- `any(...)` — returns True on the first match, stops immediately
+
+Anti-example: `kw == text` would require an exact match — useless for merchant names.
+
+## dataclass field(default_factory=list)
+
+```python
+category: list[str] = field(default_factory=list)
+```
+
+- `list[str]` — type annotation: a list of strings
+- `field(default_factory=list)` — call `list()` to create a fresh `[]` for each new instance
+
+**Why not `= []`?** In Python, `= []` creates ONE list shared across every instance.
+Modifying one Transaction's category would affect all others with the default.
+`default_factory=list` gives each Transaction its own separate empty list.
