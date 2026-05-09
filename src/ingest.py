@@ -13,7 +13,9 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from src.categorize import categorize
 from src.models import Transaction
+from src.store import save_transactions
 
 load_dotenv()
 
@@ -137,6 +139,7 @@ def print_summary(transactions: list[Transaction]) -> None:
 
 def main() -> None:
     use_sample = "--sample" in sys.argv or not os.getenv("PLAID_CLIENT_ID")
+    dry_run = "--no-save" in sys.argv
 
     if use_sample:
         print("Mode: local sample data")
@@ -145,7 +148,16 @@ def main() -> None:
         print("Mode: Plaid sandbox")
         transactions = fetch_from_plaid()
 
+    for txn in transactions:
+        txn.category = [categorize(txn)]
+
     print_summary(transactions)
+
+    if dry_run:
+        print("Skipping DynamoDB save (--no-save).")
+    else:
+        saved = save_transactions(transactions)
+        print(f"Saved {saved} transactions to DynamoDB.")
 
 
 if __name__ == "__main__":
