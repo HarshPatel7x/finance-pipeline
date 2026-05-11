@@ -16,9 +16,7 @@ def _get_table():
     if _table is None:
         dynamodb = boto3.resource(
             'dynamodb',
-            region_name=os.getenv('AWS_DEFAULT_REGION'),
-            aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-            aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
+            region_name=os.getenv('AWS_DEFAULT_REGION', 'us-east-1'),
         )
         _table = dynamodb.Table('Transactions')
     return _table

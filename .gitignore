@@ -6,3 +6,5 @@ data/real_*.json
 .DS_Store
 .venv/
 venv/
+lambda.zip
+package/
