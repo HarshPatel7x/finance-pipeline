@@ -1,3 +1,4 @@
+from src.claude_categorize import classify as _claude_classify
 from src.models import Transaction
 
 _RULES: list[tuple[str, list[str]]] = [
@@ -16,12 +17,10 @@ _RULES: list[tuple[str, list[str]]] = [
     ("Transfer",        ["transfer", "zelle", "venmo", "paypal", "wire"]),
 ]
 
-_DEFAULT = "Other"
-
 
 def categorize(txn: Transaction) -> str:
     text = f"{txn.name} {txn.merchant_name or ''}".lower()
     for category, keywords in _RULES:
         if any(kw in text for kw in keywords):
             return category
-    return _DEFAULT
+    return _claude_classify(txn)

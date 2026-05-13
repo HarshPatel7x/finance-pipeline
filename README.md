@@ -26,9 +26,9 @@ graph TB
 | Week | Layer | Status |
 |------|-------|--------|
 | 1 | Plaid ingestion + repo setup | ✅ Done |
-| 2 | DynamoDB write + rule-based categorization | 🔲 |
-| 3 | Lambda + CloudWatch schedule | 🔲 |
-| 4 | Claude API categorization | 🔲 |
+| 2 | DynamoDB write + rule-based categorization | ✅ Done |
+| 3 | Lambda + CloudWatch schedule | ✅ Done |
+| 4 | Claude API categorization | ✅ Done |
 | 5 | Report output | 🔲 |
 | 6 | Cleanup + apply | 🔲 |
 
@@ -58,5 +58,6 @@ python -m src.ingest --sample     # local sample data (no credentials needed)
 | `PLAID_CLIENT_ID` | From Plaid dashboard |
 | `PLAID_SECRET` | Sandbox or development secret |
 | `PLAID_ENV` | `sandbox` / `development` / `production` |
+| `ANTHROPIC_API_KEY` | From console.anthropic.com — fallback categorizer when keyword rules return "Other" |
 
 **Never commit `.env`.** Real bank credentials stay local only.
