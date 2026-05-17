@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 
 from src.categorize import categorize
 from src.models import Transaction
+from src.report import print_report
 from src.store import save_transactions
 
 load_dotenv()
@@ -152,6 +153,16 @@ def main() -> None:
         txn.category = [categorize(txn)]
 
     print_summary(transactions)
+
+    debt_balance = float(os.getenv("DEBT_BALANCE") or 0)
+    debt_rate = float(os.getenv("DEBT_ANNUAL_RATE") or 0)
+    debt_payment = float(os.getenv("DEBT_MONTHLY_PAYMENT") or 0)
+    print_report(
+        transactions,
+        debt_balance=debt_balance or None,
+        debt_rate=debt_rate or None,
+        debt_payment=debt_payment or None,
+    )
 
     if dry_run:
         print("Skipping DynamoDB save (--no-save).")

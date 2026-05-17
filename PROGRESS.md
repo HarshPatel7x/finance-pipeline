@@ -48,6 +48,17 @@
 
 ---
 
+## Week 5 (2026-05-16)
+**Goal:** Report output — monthly spending summary + debt payoff projection.
+
+- [x] `src/report.py` — `monthly_summary()` + `debt_payoff_projection()` + `print_report()`
+- [x] `src/ingest.py` — wired `print_report()` into `main()` after categorize loop
+- [x] `.env.example` — added `DEBT_BALANCE`, `DEBT_ANNUAL_RATE`, `DEBT_MONTHLY_PAYMENT`
+- [x] Smoke test: `python3 -m src.ingest --sample --no-save` — report renders correctly
+- [ ] Commit + push on `week5/report-output` branch
+
+---
+
 ## Metrics
 
 | Week | Sessions | Commits | Feature shipped |
@@ -56,6 +67,7 @@
 | 2    | —        | 2       | DynamoDB + keyword categorize |
 | 3    | —        | 1       | Lambda + daily schedule |
 | 4    | —        | 1       | Claude fallback categorize |
+| 5    | 1        | —       | Monthly summary + debt projection report |
 
 ---
 
