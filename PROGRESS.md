@@ -55,7 +55,20 @@
 - [x] `src/ingest.py` — wired `print_report()` into `main()` after categorize loop
 - [x] `.env.example` — added `DEBT_BALANCE`, `DEBT_ANNUAL_RATE`, `DEBT_MONTHLY_PAYMENT`
 - [x] Smoke test: `python3 -m src.ingest --sample --no-save` — report renders correctly
-- [ ] Commit + push on `week5/report-output` branch
+- [x] Commit + push on `week5/report-output` branch
+
+---
+
+## Week 6 (2026-05-18)
+**Goal:** Cleanup, architecture doc, "how I built this" section in README.
+
+- [ ] Architecture doc: data flow diagram + AWS components labeled
+- [ ] README "How I built this" section: decisions + tradeoffs (not narration)
+- [ ] Code cleanup pass: dead imports, TODOs, stale comments
+- [ ] Final commit on `main`
+
+**Sessions this week:** 0
+**Commits this week:** 0
 
 ---
 
