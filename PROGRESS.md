@@ -63,12 +63,12 @@
 **Goal:** Cleanup, architecture doc, "how I built this" section in README.
 
 - [ ] Architecture doc: data flow diagram + AWS components labeled
-- [ ] README "How I built this" section: decisions + tradeoffs (not narration)
+- [x] README "How I built this" section: decisions + tradeoffs (not narration)
 - [ ] Code cleanup pass: dead imports, TODOs, stale comments
 - [ ] Final commit on `main`
 
-**Sessions this week:** 0
-**Commits this week:** 0
+**Sessions this week:** 2
+**Commits this week:** 2
 
 ---
 
