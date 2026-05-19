@@ -51,6 +51,29 @@ EI lateral spread continues, fourth hit today:
 
 Lesson: the "why-fit + tradeoff" reasoning lands when the drill is explicit. Without scaffolding, defaults to mechanism narration. Reps needed at unguided-prose level.
 
+---
+
+## Session 2 — 2026-05-19
+
+**Tier:** Self Okay / My Okay — match ✓ (user under-called Struggle; content correct, one missing structure piece)
+**Commit:** a2ff9b7 — week6/architecture-doc
+
+### Concepts taught (gaps from session 1)
+
+**Plaid pricing:** Sandbox (free) → Development (~$500/month/100 items) → Production. Decision: sandbox-only is deliberate scope at $0 budget, not limitation. "Plaid sandbox is free. Production connections cost money per linked account — scoped to sandbox intentionally."
+
+**DynamoDB:** RDS needs 24/7 server ($15/month after 12-month free tier). DynamoDB: pay-per-request, $0 idle, IAM-direct to Lambda (no VPC, no connection pooling). Constraint → elimination: no persistent server = DynamoDB only.
+
+**CloudWatch Events:** `rate(1 day)` fires Lambda even when laptop sleeps. Does NOT retry on failure — silent skip. Acceptable here (missing days visible in report). Not for payments (add SQS DLQ there).
+
+**Lambda + Rust gotcha:** `pydantic_core` Rust-compiled on macOS → macOS binary. Lambda runs Linux. ImportError on cold start. Fix: `pip install --platform manylinux2014_x86_64 --only-binary=:all:` when building package/.
+
+### What landed vs missed
+
+Landed: constraints opener added ✓, DynamoDB vs RDS ✓, CloudWatch retry semantics ✓, Rust gotcha verbatim ✓, Claude API scale tradeoff ✓, silent degrade ✓.
+
+Missed: constraints opener still needed format lookup (2nd session — Principle 3 gap persists at unguided-prose level). Typos not self-caught ("Lamda" ×5, "Pliad" ×3) — fixed in commit.
+
 ## Queued
 
 **Tomorrow (Tuesday 2026-05-19, Track C continuation):**
