@@ -2,7 +2,6 @@
 Report generation: monthly spending summary + debt payoff projection.
 Usage: called from ingest.main() after transactions are categorized.
 """
-import os
 from src.models import Transaction
 
 
