@@ -55,35 +55,42 @@ Silent degrade-to-other as a fallback for when the Claude API is down or if the 
 ---
 
 ## What I'd do at scale
-if this pipeline had to serve many users / high volume / a data team, what would I change, and 
-  why?
 
+### Store - Dyanmo DB -> Snowflake:
+    At scale, snowflake offers data storage and analysis (Offers storage + compute as seperate, so you can scale as you need). 
 
-# 1 Store:
-    Dyanmo DB:
-        Pro: Rapid read and write, storing data as Key-Value pair transaction, quick look up for the transaction 'Data X-010'
+    Dynamo cannot do JOINS or GROUP BY. It is best Rapid read and write, storing data as Key-Value pair transaction, and quick look up for the transaction 'Data X-010'
         
-        Con: For querying and large scale analysis of the data, creation of tables(due to no JOINS, ORDER BY, etc.) 
+    At large scale you will require creation of table, which is why I would pick snowflake over DyanmoDB.
 
-    Snowflake:
-        Pro: For large scale data storage and analysis (Offers storage + compute as seperate, so you can scale as you need)
+    However, for current scale of the project DynamoDB the need of ingesting the transactions once each day.
 
-        Con: For operational data storage (You can't view the data while its being ingested)
+### Transformation - Report.py -> dbt:
+    First DBT synergizes well with snowflake.
+
+    It offers manged, lineaged and tested queries. Can be added as a seperate analytics alyer.
+
+    Report.py works for single user application with monthly ingested trasaction
     
-    Decision: DynamoDB as it suits the project's need of only storing the transactions once per month.
+    DBT is for heavy duty use such as multiple user and more complex analysis, which is why I would pick DBT over Report.py.
 
-# 2 Transform:
-    Report.py
-        Pro: For single user application with monthly ingested trasaction
-        
-        Con: For multiple users, more frequent transaction, more analysis. - Basicaly breaks as it scales due to limited system memory constrain.
+    However it is necesary for this project's scale where only sum of transaction grouped by categories and month is needed.
 
-    dbt:
-        Pro: For manged, lineaged and tested queries. Synergizes with snowflake. Can be added as analytics layer to database.
+### Orchestration - CloudWatch -> Airflow/MWAA
+    Airflow is an orchestrator build for multi-steps event as a DAG.
 
-        Con: Build for large scale. Unecesary for this project's scale. 
+    CloudWatch can not be run conditionaly, for example it can't do run A only if step B is done.
 
-    Decision: Report.py as it suits the need of this project of printing the (small compute)summary from the in-system memory once a month(low fewquency and less memory demand).      
+    It works for a single fused lamda wired in the current project however at a scale where a that lamda may be partitioned, I would choose Airflow. 
+
+    The only ceavet is that AWS Steps is simmilar to Airflow, while data engineering industry's default is Airflow.
+    
+### Processing - None -> Kinesis
+    AWS Kinesis processes the events as they come, scales on volume. It also has Ordering + Replay.
+
+    It is best to motintor realtime event (ex: frauds, payment's due date, etc.) That is why i would pick Kinesis as a processing tool for this project at scale.
+
+    Not needed for this project's need at its scale.
 
 ---
 

@@ -40,12 +40,18 @@ pipeline -> what to add -> why.
 ## Section status / next session
 
 - [x] Architecture diagram corrected.
-- [~] "What I'd do at scale" — Store + Transform drafted. Reframe each so it
-      states the at-scale change explicitly (forward-looking: "at scale ->
-      add X because Y", with the keep-current reasoning as the last sentence,
-      not the verdict). Markdown: use `###` subheadings, no leading-space
-      indentation (indented text renders as a code block).
-- [ ] "What I'd do at scale" — Airflow + Kinesis entries.
+- [x] "What I'd do at scale" — all 4 entries drafted (Store, Transform,
+      Orchestration, Processing), reframed forward-looking ("at scale -> X").
+- [ ] Polish pass on the section before PR:
+      - Markdown: remove the 4-space indentation under each `###` heading —
+        indented lines render as code blocks on GitHub. Flush everything left.
+      - Spelling: Dyanmo->DynamoDB, seperate->separate, manged->managed,
+        alyer->layer, ceavet->caveat, simmilar->similar, motintor->monitor,
+        lamda->Lambda.
+      - Store + Transform each have one broken/inverted sentence ("DynamoDB
+        the need of ingesting"; "it is necesary for this project's scale").
+        Reword so each clearly says the current tool is *sufficient* now.
+      - Transform says "monthly ingested transaction" — pipeline runs daily.
 - [ ] Metrics: transactions processed, cost per run, categorization accuracy.
 
 Fix note: the pipeline runs once per 24h (CloudWatch schedule), not monthly —
