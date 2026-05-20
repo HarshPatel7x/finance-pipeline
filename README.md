@@ -12,14 +12,14 @@ Built in 6 weeks as a portfolio project for data engineering roles.
 graph TB
     A[Bank of America] -->|OAuth via Plaid| B[Plaid API]
     B -->|JSON transactions| C[ingest.py]
-    C -->|Normalized records| D[(DynamoDB)]
-    D -->|Raw transactions| E[categorize.py]
+    C -->|Categorized transactions| D[(DynamoDB)]
+    C -->|Raw transactions| E[categorize.py]
     E -->|Description| F[Claude API]
     F -->|Category label| E
-    E -->|Categorized records| D
+    E -->|Categorized records| C
     G[CloudWatch] -->|Schedule| H[AWS Lambda]
     H -->|Trigger| C
-    D -->|Query| I[report.py]
+    C -->|In-memory transaction list| I[report.py]
     I --> J[Monthly Summary + Debt Projection]
 ```
 
@@ -51,6 +51,40 @@ DynamoDB is chosen for datastorage due to its flexible price + serverless featur
 Claude API for categorization because transactions are free-text with many variations and a long tail that no rule based keyword map can accommodate. The cost is latency network call per transaction vs dict look ups and it works if 50 txns/month -> $0.001/txn claude haiku but not if 50K txns/month.
 
 Silent degrade-to-other as a fallback for when the Claude API is down or if the category doesn't fit pattern-based keyword map, instead of failing.
+
+---
+
+## What I'd do at scale
+if this pipeline had to serve many users / high volume / a data team, what would I change, and 
+  why?
+
+
+# 1 Store:
+    Dyanmo DB:
+        Pro: Rapid read and write, storing data as Key-Value pair transaction, quick look up for the transaction 'Data X-010'
+        
+        Con: For querying and large scale analysis of the data, creation of tables(due to no JOINS, ORDER BY, etc.) 
+
+    Snowflake:
+        Pro: For large scale data storage and analysis (Offers storage + compute as seperate, so you can scale as you need)
+
+        Con: For operational data storage (You can't view the data while its being ingested)
+    
+    Decision: DynamoDB as it suits the project's need of only storing the transactions once per month.
+
+# 2 Transform:
+    Report.py
+        Pro: For single user application with monthly ingested trasaction
+        
+        Con: For multiple users, more frequent transaction, more analysis. - Basicaly breaks as it scales due to limited system memory constrain.
+
+    dbt:
+        Pro: For manged, lineaged and tested queries. Synergizes with snowflake. Can be added as analytics layer to database.
+
+        Con: Build for large scale. Unecesary for this project's scale. 
+
+    Decision: Report.py as it suits the need of this project of printing the (small compute)summary from the in-system memory once a month(low fewquency and less memory demand).      
+
 ---
 
 ## Setup
