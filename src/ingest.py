@@ -14,6 +14,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from src.categorize import categorize
+from src.metrics import run_summary
 from src.models import Transaction
 from src.report import print_report
 from src.store import save_transactions
@@ -149,8 +150,11 @@ def main() -> None:
         print("Mode: Plaid sandbox")
         transactions = fetch_from_plaid()
 
+    results = []
     for txn in transactions:
-        txn.category = [categorize(txn)]
+        result = categorize(txn)
+        txn.category = [result.category]
+        results.append(result)
 
     print_summary(transactions)
 
@@ -163,6 +167,16 @@ def main() -> None:
         debt_rate=debt_rate or None,
         debt_payment=debt_payment or None,
     )
+
+    summary = run_summary(results)
+    print("\n" + "=" * 52)
+    print("  CATEGORIZATION METRICS")
+    print("=" * 52)
+    print(f"  Transactions:   {summary['total']}")
+    print(f"  Keyword path:   {summary['by_source']['keyword']}")
+    print(f"  Claude path:    {summary['by_source']['claude']}")
+    print(f"  Input tokens:   {summary['input_tokens']}")
+    print(f"  Output tokens:  {summary['output_tokens']}")
 
     if dry_run:
         print("Skipping DynamoDB save (--no-save).")

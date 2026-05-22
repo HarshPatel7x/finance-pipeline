@@ -2,7 +2,7 @@ import os
 
 from anthropic import Anthropic
 
-from src.models import Transaction
+from src.models import Transaction, CategorizationResult
 
 _MODEL = "claude-haiku-4-5-20251001"
 _ALLOWED = {
@@ -33,10 +33,12 @@ def _get_client() -> Anthropic | None:
         return None
 
 
-def classify(txn: Transaction) -> str:
+def classify(txn: Transaction) -> CategorizationResult:
+    """LLM fallback categorizer. Always reports source='claude'; token counts
+    are 0 when the API key is missing or the call fails (degrades to 'Other')."""
     client = _get_client()
     if client is None:
-        return "Other"
+        return CategorizationResult(category="Other", source="claude")
     prompt = _PROMPT_TEMPLATE.format(
         name=txn.name,
         merchant=txn.merchant_name or "n/a",
@@ -50,6 +52,12 @@ def classify(txn: Transaction) -> str:
             messages=[{"role": "user", "content": prompt}],
         )
         text = resp.content[0].text.strip()
-        return text if text in _ALLOWED else "Other"
+        category = text if text in _ALLOWED else "Other"
+        return CategorizationResult(
+            category=category,
+            source="claude",
+            input_tokens=resp.usage.input_tokens,
+            output_tokens=resp.usage.output_tokens,
+        )
     except Exception:
-        return "Other"
+        return CategorizationResult(category="Other", source="claude")

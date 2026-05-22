@@ -20,3 +20,12 @@ class Transaction:
     @property
     def is_credit(self) -> bool:
         return self.amount < 0
+
+
+@dataclass
+class CategorizationResult:
+    """One categorization outcome — produced per transaction by categorize()."""
+    category: str
+    source: str                      # "keyword" (rule hit) or "claude" (LLM fallback)
+    input_tokens: int = 0            # 0 for the keyword path
+    output_tokens: int = 0           # 0 for the keyword path
