@@ -1,5 +1,5 @@
 from src.claude_categorize import classify as _claude_classify
-from src.models import Transaction
+from src.models import Transaction, CategorizationResult
 
 _RULES: list[tuple[str, list[str]]] = [
     ("Food & Drink",    ["restaurant", "cafe", "coffee", "mcdonald", "starbucks", "chipotle",
@@ -18,9 +18,10 @@ _RULES: list[tuple[str, list[str]]] = [
 ]
 
 
-def categorize(txn: Transaction) -> str:
+def categorize(txn: Transaction) -> CategorizationResult:
     text = f"{txn.name} {txn.merchant_name or ''}".lower()
     for category, keywords in _RULES:
         if any(kw in text for kw in keywords):
-            return category
+            return CategorizationResult(category=category, source="keyword")
+    # no keyword rule matched → LLM fallback (classify() owns source + tokens)
     return _claude_classify(txn)

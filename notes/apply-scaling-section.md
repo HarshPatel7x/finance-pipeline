@@ -40,19 +40,25 @@ pipeline -> what to add -> why.
 ## Section status / next session
 
 - [x] Architecture diagram corrected.
-- [x] "What I'd do at scale" — all 4 entries drafted (Store, Transform,
-      Orchestration, Processing), reframed forward-looking ("at scale -> X").
-- [ ] Polish pass on the section before PR:
-      - Markdown: remove the 4-space indentation under each `###` heading —
-        indented lines render as code blocks on GitHub. Flush everything left.
-      - Spelling: Dyanmo->DynamoDB, seperate->separate, manged->managed,
-        alyer->layer, ceavet->caveat, simmilar->similar, motintor->monitor,
-        lamda->Lambda.
-      - Store + Transform each have one broken/inverted sentence ("DynamoDB
-        the need of ingesting"; "it is necesary for this project's scale").
-        Reword so each clearly says the current tool is *sufficient* now.
-      - Transform says "monthly ingested transaction" — pipeline runs daily.
+- [x] "What I'd do at scale" — all 4 entries drafted, reframed forward-looking.
+- [x] Polish pass — DONE 2026-05-20 S2. Indentation resolved by switching
+      `###` headings to a numbered list (4-space indent under a list item is
+      paragraph text, not a code block). Spelling + grammar + daily-not-monthly
+      all fixed and grep-clean.
 - [ ] Metrics: transactions processed, cost per run, categorization accuracy.
+      BLOCKED ON instrumentation — see below.
 
-Fix note: the pipeline runs once per 24h (CloudWatch schedule), not monthly —
-the monthly *report* is the output; the *run* cadence is daily.
+## Metrics — instrumentation rep (next session, 2026-05-21)
+
+The pipeline can't self-report yet: `categorize()` returns only a category
+string (can't tell keyword vs Claude vs degraded), and `claude_categorize.py`
+discards `resp.usage` (no token cost). Honest metrics need a small change:
+- `categorize()` returns `(category, source)` where source is keyword/claude/degraded.
+- `claude_categorize.classify()` surfaces token usage from `resp.usage`.
+- A run-summary line: `Categorized: N keyword · N Claude · N tokens · ~$X`.
+Track C split: user writes the summary function; Claude scaffolds the
+return-type plumbing through categorize.py / claude_categorize.py / ingest.py.
+
+Confirmed 2026-05-20 S2: `ANTHROPIC_API_KEY` was missing from `.env` — the Claude
+fallback silently degraded every non-keyword txn to "Other". Key now added;
+categorizer verified working (Other $685 -> $254, Transfer $371).

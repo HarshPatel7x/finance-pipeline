@@ -34,6 +34,27 @@ graph TB
 
 ---
 
+## Categorization metrics
+
+Every run reports how transactions were classified — free keyword rules vs. the
+Claude API fallback — and what the LLM calls cost in tokens. A sample run
+(`python -m src.ingest --sample`):
+
+| Metric | Value |
+|--------|-------|
+| Transactions | 12 |
+| Keyword path | 7 |
+| Claude path | 5 |
+| Input tokens | 337 |
+| Output tokens | 26 |
+
+The keyword/Claude split is the cost lever: keyword hits are free and instant;
+Claude calls cost tokens and a network round-trip. At ~50 transactions/month the
+LLM tail is negligible; at 50k/month it is the line item to watch — so the split
+is measured per run, not assumed.
+
+---
+
 ## How I Built This
 
 I had $0/month and no persistent server — every architecture decision follows that.
@@ -56,39 +77,43 @@ Silent degrade-to-other as a fallback for when the Claude API is down or if the 
 
 ## What I'd do at scale
 
-### Store - Dyanmo DB -> Snowflake:
-    At scale, snowflake offers data storage and analysis (Offers storage + compute as seperate, so you can scale as you need). 
+1) Store - DynamoDB -> Snowflake:
+
+    At scale, snowflake offers data storage and analysis (Offers storage + compute as separate, so you can scale as you need). 
 
     Dynamo cannot do JOINS or GROUP BY. It is best Rapid read and write, storing data as Key-Value pair transaction, and quick look up for the transaction 'Data X-010'
         
-    At large scale you will require creation of table, which is why I would pick snowflake over DyanmoDB.
+    At large scale you will require creation of table, which is why I would pick snowflake over DynamoDB.
 
-    However, for current scale of the project DynamoDB the need of ingesting the transactions once each day.
+    However, for current scale of the project DynamoDB suits the need of ingesting the transactions once each day.
 
-### Transformation - Report.py -> dbt:
+2) Transformation - Report.py -> dbt:
+
     First DBT synergizes well with snowflake.
 
-    It offers manged, lineaged and tested queries. Can be added as a seperate analytics alyer.
+    It offers managed, lineaged and tested queries. Can be added as a separate analytics layer.
 
-    Report.py works for single user application with monthly ingested trasaction
+    Report.py works for single user application with daily ingested transactions where reporting once a month is enough.
     
     DBT is for heavy duty use such as multiple user and more complex analysis, which is why I would pick DBT over Report.py.
 
-    However it is necesary for this project's scale where only sum of transaction grouped by categories and month is needed.
+    However it is sufficient for this project's scale where only sum of transaction grouped by categories and month is needed.
 
-### Orchestration - CloudWatch -> Airflow/MWAA
+3) Orchestration - CloudWatch -> Airflow/MWAA
+
     Airflow is an orchestrator build for multi-steps event as a DAG.
 
     CloudWatch can not be run conditionaly, for example it can't do run A only if step B is done.
 
-    It works for a single fused lamda wired in the current project however at a scale where a that lamda may be partitioned, I would choose Airflow. 
+    It works for a single fused Lambda wired in the current project however at a scale where a that Lambda may be partitioned, I would choose Airflow. 
 
-    The only ceavet is that AWS Steps is simmilar to Airflow, while data engineering industry's default is Airflow.
+    The only caveat is that AWS Steps is similar to Airflow, while data engineering industry's default is Airflow.
     
-### Processing - None -> Kinesis
+4) Processing - None -> Kinesis
+
     AWS Kinesis processes the events as they come, scales on volume. It also has Ordering + Replay.
 
-    It is best to motintor realtime event (ex: frauds, payment's due date, etc.) That is why i would pick Kinesis as a processing tool for this project at scale.
+    It is best to monitor realtime event (ex: frauds, payment's due date, etc.) That is why i would pick Kinesis as a processing tool for this project at scale.
 
     Not needed for this project's need at its scale.
 
