@@ -18,16 +18,16 @@ _PROMPT_TEMPLATE = (
 )
 
 _client: Anthropic | None = None
-_resolution_attempted = False
 
 
 def _get_client() -> Anthropic | None:
-    global _client, _resolution_attempted
+    # Cache only on SUCCESS: a container that started before the SSM parameter
+    # existed will re-resolve and self-heal on its next call, rather than caching
+    # the failure for the container's lifetime. (One SSM read per container when
+    # healthy; cheap repeated reads only while genuinely degraded.)
+    global _client
     if _client is not None:
         return _client
-    if _resolution_attempted:
-        return None
-    _resolution_attempted = True
     key = resolve_secret("ANTHROPIC_API_KEY", ANTHROPIC_API_KEY_SSM)
     if not key:
         return None
