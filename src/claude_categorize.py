@@ -1,8 +1,9 @@
-import os
-
 from anthropic import Anthropic
 
 from src.models import Transaction, CategorizationResult
+from src.secrets import resolve_secret
+
+ANTHROPIC_API_KEY_SSM = "/finance-pipeline/anthropic_api_key"
 
 _MODEL = "claude-haiku-4-5-20251001"
 _ALLOWED = {
@@ -17,13 +18,17 @@ _PROMPT_TEMPLATE = (
 )
 
 _client: Anthropic | None = None
+_resolution_attempted = False
 
 
 def _get_client() -> Anthropic | None:
-    global _client
+    global _client, _resolution_attempted
     if _client is not None:
         return _client
-    key = os.getenv("ANTHROPIC_API_KEY")
+    if _resolution_attempted:
+        return None
+    _resolution_attempted = True
+    key = resolve_secret("ANTHROPIC_API_KEY", ANTHROPIC_API_KEY_SSM)
     if not key:
         return None
     try:
