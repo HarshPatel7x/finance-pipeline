@@ -21,3 +21,24 @@ jobs:
 
       - name: Run sample ingest
         run: python -m src.ingest --sample --no-save
+
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/terraform
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.5"
+
+      - name: Format check
+        run: terraform fmt -check -recursive
+
+      # -backend=false: validate the config without AWS creds / the S3 backend
+      - name: Validate
+        run: |
+          terraform init -backend=false
+          terraform validate
