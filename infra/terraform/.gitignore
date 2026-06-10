@@ -1,0 +1,17 @@
+# Terraform state — contains the imported Lambda's environment (PLAID_SECRET). NEVER commit.
+*.tfstate
+*.tfstate.*
+
+# Local provider cache / plugins
+.terraform/
+
+# Plan output & crash logs
+*.tfplan
+crash.log
+crash.*.log
+
+# Variable files that may hold secrets
+*.tfvars
+*.tfvars.json
+
+# NOTE: .terraform.lock.hcl IS intentionally committed (provider version pinning).
