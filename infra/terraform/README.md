@@ -27,9 +27,11 @@ genuinely new managed change — log retention — without disturbing the daily 
   `finance-pipeline-dev` principal is intentionally **denied** `s3:GetEncryptionConfiguration` /
   `GetBucketVersioning`, so they aren't re-readable from here — verify from an admin identity if needed.
 - **Locking:** S3-native (`use_lockfile = true`, Terraform ≥ 1.10) — no DynamoDB lock table.
-- **Why state is sensitive:** importing the Lambda pulls its environment — which includes
-  `PLAID_SECRET` — into state. That's why the object is written encrypted (`encrypt = true`) and
-  `*.tfstate` is gitignored.
+- **Why state is sensitive:** importing the Lambda pulled its environment into state. `PLAID_SECRET`
+  has since been moved to SSM (see **Secrets** below), removed from the Lambda env, and scrubbed from
+  current state via `terraform apply -refresh-only`. The object is still written encrypted
+  (`encrypt = true`) and `*.tfstate` gitignored as a precaution (older state versions may retain
+  rotated/dead values).
 
 ## Drift handling
 
@@ -52,8 +54,33 @@ Auth: the local `finance-pipeline-dev` IAM user (full Lambda/EventBridge/DynamoD
 S3 read/write on the state bucket only). In a team/prod setup this would be OIDC role-assumption in
 CI rather than a long-lived user — not wired here (solo project).
 
+## Secrets (managed out-of-band)
+
+Both runtime secrets are **SSM Parameter Store SecureString** params, read by the Lambda at runtime
+via its execution role (env-first, SSM fallback — see `src/secrets.py`):
+
+| Parameter | Used by |
+|-----------|---------|
+| `/finance-pipeline/plaid_secret` | `src/ingest.py` (Plaid auth) |
+| `/finance-pipeline/anthropic_api_key` | `src/claude_categorize.py` (Claude) |
+
+The params and the `finance-pipeline-ssm-read` inline policy on the Lambda role (scoped to exactly
+those two ARNs, `ssm:GetParameter` only) are created **out-of-band by an admin** — deliberately NOT
+managed by this module. The `finance-pipeline-dev` principal is read-only on IAM and lacks
+`ssm:PutParameter`, so managing them here would force IAM/SSM writes it can't make and turn a clean
+plan into a denied apply (same reason the role is a read-only `data` source).
+
+**A fresh deploy must recreate them** (admin identity):
+
+```bash
+aws ssm put-parameter --name /finance-pipeline/plaid_secret      --type SecureString --key-id alias/aws/ssm --value '<PLAID_SECRET>'      --region us-east-1
+aws ssm put-parameter --name /finance-pipeline/anthropic_api_key --type SecureString --key-id alias/aws/ssm --value '<ANTHROPIC_API_KEY>' --region us-east-1
+aws iam put-role-policy --role-name finance-pipeline-lambda-role --policy-name finance-pipeline-ssm-read \
+  --policy-document '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":"ssm:GetParameter","Resource":["arn:aws:ssm:us-east-1:477913828854:parameter/finance-pipeline/plaid_secret","arn:aws:ssm:us-east-1:477913828854:parameter/finance-pipeline/anthropic_api_key"]}]}'
+```
+
+Without these the Lambda degrades: Plaid auth fails (run errors) and Claude falls back to keyword-only.
+
 ## What I'd improve next
 
-- Move `PLAID_SECRET` out of the Lambda env into **SSM Parameter Store / Secrets Manager** and
-  reference it, so no secret ever lands in Terraform state.
 - Add a CI plan check via OIDC so drift is caught on every PR.

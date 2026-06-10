@@ -24,6 +24,11 @@ jobs:
           pip install pip-audit==2.10.0
           pip-audit --no-deps -r requirements.txt
 
+      - name: Unit tests
+        run: |
+          pip install pytest
+          python -m pytest tests/ -q
+
       - name: Run sample ingest
         run: python -m src.ingest --sample --no-save
 
