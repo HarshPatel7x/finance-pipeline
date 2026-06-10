@@ -19,6 +19,11 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Dependency vulnerability scan (pip-audit)
+        run: |
+          pip install pip-audit==2.10.0
+          pip-audit --no-deps -r requirements.txt
+
       - name: Run sample ingest
         run: python -m src.ingest --sample --no-save
 
