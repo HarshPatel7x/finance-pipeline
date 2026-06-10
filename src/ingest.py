@@ -24,6 +24,28 @@ load_dotenv()
 DATA_DIR = Path(__file__).parent.parent / "data"
 SAMPLE_FILE = DATA_DIR / "sample_transactions.json"
 
+PLAID_SECRET_SSM = "/finance-pipeline/plaid_secret"
+
+
+def _resolve_secret(env_var: str, ssm_name: str) -> str | None:
+    """Resolve a secret env-first, then from SSM Parameter Store (SecureString).
+
+    Local dev sets the value in .env. The deployed Lambda has no such env var --
+    it reads the SecureString from SSM via its execution role, so the secret never
+    lives in the Lambda configuration or in Terraform state.
+    """
+    value = os.getenv(env_var)
+    if value:
+        return value
+    try:
+        import boto3
+
+        ssm = boto3.client("ssm", region_name=os.getenv("AWS_DEFAULT_REGION", "us-east-1"))
+        return ssm.get_parameter(Name=ssm_name, WithDecryption=True)["Parameter"]["Value"]
+    except Exception as e:  # degrade with a clear message instead of an opaque boto error
+        print(f"WARN: could not load {env_var} from SSM ({ssm_name}): {e}")
+        return None
+
 
 def load_sample() -> list[Transaction]:
     with open(SAMPLE_FILE) as f:
@@ -42,12 +64,12 @@ def fetch_from_plaid() -> list[Transaction]:
     from plaid.model.transactions_refresh_request import TransactionsRefreshRequest
 
     client_id = os.getenv("PLAID_CLIENT_ID")
-    secret = os.getenv("PLAID_SECRET")
+    secret = _resolve_secret("PLAID_SECRET", PLAID_SECRET_SSM)
     env = os.getenv("PLAID_ENV", "sandbox")
 
     if not client_id or not secret:
-        print("ERROR: PLAID_CLIENT_ID and PLAID_SECRET must be set in .env")
-        print("Tip: copy .env.example → .env and fill in your credentials.")
+        print("ERROR: PLAID_CLIENT_ID (env) and PLAID_SECRET (env or SSM) must be set.")
+        print("Tip: .env for local dev; in AWS the Lambda reads PLAID_SECRET from SSM Parameter Store.")
         sys.exit(1)
 
     host = {
