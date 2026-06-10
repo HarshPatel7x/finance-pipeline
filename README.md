@@ -119,6 +119,18 @@ Silent degrade-to-other as a fallback for when the Claude API is down or if the 
 
 ---
 
+## Infrastructure (Terraform)
+
+The AWS infrastructure — the Lambda, the daily EventBridge schedule and its wiring, and the
+Lambda log group — is defined as code in [`infra/terraform/`](infra/terraform/). The stack was
+originally stood up by [`deploy.sh`](deploy.sh) and later **adopted into Terraform via brownfield
+`import`**, so the running pipeline stays live while Terraform manages its configuration. State
+lives in an encrypted S3 backend with native locking; the IAM role and DynamoDB table are
+referenced read-only. See [`infra/terraform/README.md`](infra/terraform/README.md) for the state,
+drift, and secret-handling notes.
+
+---
+
 ## Setup
 
 ```bash
