@@ -5,6 +5,7 @@ SecureString parameters from SSM via its execution role -- so secrets never live
 the function configuration or in Terraform state.
 """
 import os
+import sys
 
 
 def resolve_secret(env_var: str, ssm_name: str) -> str | None:
@@ -22,5 +23,7 @@ def resolve_secret(env_var: str, ssm_name: str) -> str | None:
         ssm = boto3.client("ssm", region_name=os.getenv("AWS_DEFAULT_REGION", "us-east-1"))
         return ssm.get_parameter(Name=ssm_name, WithDecryption=True)["Parameter"]["Value"]
     except Exception as e:
-        print(f"WARN: could not load {env_var} from SSM ({ssm_name}): {e}")
+        # stderr, not stdout: when this code runs inside the stdio MCP server,
+        # stdout carries the JSON-RPC stream and any stray print corrupts it.
+        print(f"WARN: could not load {env_var} from SSM ({ssm_name}): {e}", file=sys.stderr)
         return None
