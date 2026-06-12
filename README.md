@@ -131,6 +131,24 @@ drift, and secret-handling notes.
 
 ---
 
+## MCP server (local dev tooling)
+
+A minimal [MCP](https://modelcontextprotocol.io/) server in [`mcp_server/`](mcp_server/) exposes
+the pipeline's real categorizer as **one tool** (`categorize`) over stdio, so an MCP client like
+Claude Code can call it directly — the repo's [`.mcp.json`](.mcp.json) wires it up. The tool's
+input and output JSON Schemas are generated from the Python type hints, and
+[`tests/test_mcp_server.py`](tests/test_mcp_server.py) does a real stdio round-trip in CI
+(initialize → tools/list → tools/call). This is local dev tooling: it is **not deployed** and
+never enters the Lambda bundle (`deploy.sh` packages only `requirements.txt` + `src/`); there is
+no auth, registry, or HTTP transport. At scale I'd run it as a remote server over streamable
+HTTP with OAuth and per-tool scoping.
+
+```bash
+# one-time: deps live outside the Lambda requirements
+python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt -r requirements-mcp.txt
+# then launch `claude` from the repo root — the finance-pipeline server appears under /mcp
+```
+
 ## Setup
 
 ```bash
